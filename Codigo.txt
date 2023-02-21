@@ -1,9 +1,9 @@
-int vcx = 7;
+int vcx == 7;
 int vr2 = 5;
 if (vcx > 4){
     int vcz = vcx + 5;
 }
-proc pg (int vi, int vtr, int vr4){
+procedimento pg (int vi, int vtr, int vr4){
     if (vtr > 5){
         int vi34 = vi + 5;
     }
@@ -11,7 +11,7 @@ proc pg (int vi, int vtr, int vr4){
     int vr5 = vi + vr4;
 }
 
-func int fsoma (int vw1, int vw2){
+funcao int fsoma (int vw1, int vw2){
     int vw3 = vw1 + vw2;
     return vw3;
 }
