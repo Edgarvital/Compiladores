@@ -28,6 +28,8 @@ operadores_aritmeticos = ['+', "-", "*", "/"]
 
 operadores_booleano = ['==', ">=", "<=", "!=", ">", "<"]
 
+padronizacao = np.concatenate((operadores_booleano, operadores_aritmeticos, caracteres_especiais)) 
+
 operadores = np.concatenate((operadores_booleano, operadores_aritmeticos))
 
 condicionais = ["if", "else"]
@@ -53,7 +55,7 @@ def analise(codigo):
     global tabela_tokens
     for numero_linha, linha in enumerate(codigo):
 
-        padrao = r'(' + '|'.join([re.escape(c) for c in caracteres_especiais]) + ')'
+        padrao = r'(' + '|'.join([re.escape(c) for c in padronizacao]) + ')'
         palavras = [x for x in re.split(padrao, linha) if x if " " not in x if "\n" not in x]
 
         for palavra in palavras:
@@ -134,10 +136,16 @@ def verificar_identificador(palavra):
     return 'identificador'
 
 def verificar_caracter_numerico(palavra):
-    if palavra in caracteres_numericos:
-        return True
+    if(len(palavra)>1):
+        for caracter in palavra:
+            if caracter not in caracteres_numericos:
+                return False
+        return True   
     else:
-        return False
+        if palavra in caracteres_numericos:
+            return True
+        else:
+            return False
 
 def verificar_caracter_valido(caracter):
     if (
