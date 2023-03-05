@@ -65,8 +65,7 @@ def analise(codigo):
             else:
                 print('Erro Léxico, numero da linha: ' + str(numero_linha + 1) + ' lexema: ' + palavra)
                 exit()
-    print(tabela_tokens.to_string())
-    exit()
+    return tabela_tokens
 
 
 def verificar_palavra(palavra):
