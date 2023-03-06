@@ -18,6 +18,7 @@ def loop_verificacao():
     for index, token in enumerate(tokens):
         assinatura_if(token, numLinhas[index, 0])
         verificar_atribuicao(token, numLinhas[index, 0])
+        assinatura_while(token, numLinhas[index, 0])
 
 
 def print_error(mensagem, linha=None):
@@ -108,6 +109,16 @@ def verificar_expressao_booleana(lista_tokens, linha):
                 return True
     return False
 
+def assinatura_while(token, linha):
+    if (token == 'laco'):
+        lista_tokens_linha = get_line_tokens(linha)
+        if lista_tokens_linha.pop() == 'abre_chave':
+            if lista_tokens_linha.pop() == 'fecha_parentese':
+                if verificar_expressao_booleana(lista_tokens_linha, linha):
+                    if lista_tokens_linha.pop() == 'abre_parentese':
+                        if len(lista_tokens_linha) == 1 and lista_tokens_linha[0] == 'laco':
+                            return True
+        print_error('Erro na assinatura do While', linha)
 
 def assinatura_if(token, linha):
     if (token == 'condicional'):
