@@ -4,6 +4,8 @@ int myVar3 = 6;
 boolean vap = true;
 if (myVar2 > 10){
     int myVar4 = myVar2 + 5;
+}else{
+    int pokemon = 5;
 }
 
 funcao teste1(int arg1, int arg2){

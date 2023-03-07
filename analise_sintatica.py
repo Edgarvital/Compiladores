@@ -19,7 +19,8 @@ def analise(tabela):
 
 def loop_verificacao():
     for index, token in enumerate(tokens):
-        assinatura_if(token, numLinhas[index, 0])
+        assinatura_if(token, numLinhas[index, 0], lexemas[index])
+        assinatura_else(token, numLinhas[index, 0], lexemas[index])
         verificar_atribuicao(token, numLinhas[index, 0])
         assinatura_procedimento_funcao(token, numLinhas[index, 0])
         assinatura_while(token, numLinhas[index, 0])
@@ -124,8 +125,8 @@ def assinatura_while(token, linha):
                             return True
         print_error('Erro na assinatura do While', linha)
 
-def assinatura_if(token, linha):
-    if (token == 'condicional'):
+def assinatura_if(token, linha, lexema):
+    if (token == 'condicional' and lexema == 'if'):
         lista_tokens_linha = get_line_tokens(linha)
         if lista_tokens_linha.pop() == 'abre_chave':
             if lista_tokens_linha.pop() == 'fecha_parentese':
@@ -134,6 +135,17 @@ def assinatura_if(token, linha):
                         if len(lista_tokens_linha) == 1 and lista_tokens_linha[0] == 'condicional':
                             return True
         print_error('Erro na assinatura do IF', linha)
+
+def assinatura_else(token, linha, lexema):
+    if token == 'condicional' and lexema == 'else':
+        lista_tokens_linha = get_line_tokens(linha)
+        if len(lista_tokens_linha) == 3:
+            if lista_tokens_linha.pop() == 'abre_chave':
+                if lista_tokens_linha.pop() == 'condicional':
+                    if lista_tokens_linha.pop() == 'fecha_chave':
+                        if len(lista_tokens_linha) == 0:
+                            return True
+        print_error('Erro na assinatura do ELSE', linha)
 
 
 def create_line_tokens():
@@ -156,7 +168,8 @@ def create_line_tokens():
 
 def verifcar_abertura_chave(linha, posicao, tokens_validos, token, numero_linha):
     if token == 'abre_chave':
-        if linha[0] not in tokens_validos:
+        if linha[0] not in tokens_validos and (
+                linha[0] != 'fecha_chave' and linha[1] != 'condicional' and linha[2] != 'abre_chave'):
             print_error('Abertura de chave invalida.',numero_linha)
         if posicao != (len(linha) - 1):
             print_error('Abertura de chave invalida.',numero_linha)
@@ -173,10 +186,12 @@ def verifcar_fechamento_chave(token):
 def verificar_escopo(tokens_lines):
     tokens_validos_inicio = ['condicional', 'funcao', 'procedimento', 'laco']
     chave_Count = []
+    lista_escopo_fechado = []
+    count_lexema = 0
     for numero_linha, linha in tokens_lines.items():
         for indice, token in enumerate(linha):
             # Verificar abertura de chave
-            if verifcar_abertura_chave(linha, indice, tokens_validos_inicio, token,numero_linha):
+            if verifcar_abertura_chave(linha, indice, tokens_validos_inicio, token,numero_linha, ):
                 chave_Count.append([linha[-1], linha[0], numero_linha])
 
             # verificar fechamento de chave
@@ -184,6 +199,7 @@ def verificar_escopo(tokens_lines):
                 try:
                     # Guardando valor do que foi retirado da pilha
                     aux = chave_Count.pop()
+                    lista_escopo_fechado.append(aux)
                     # Verificando se o que foi retirado pertencia a assinatura de uma função, para então saber se ela tinha retorno
                     if aux[1] == 'funcao' and linha_anterior[0] != 'retorno':
                         print_error('A função necessita de um retorno.', aux[2])
@@ -208,6 +224,13 @@ def verificar_escopo(tokens_lines):
                         aux += 1
                 if aux == 0:
                     print_error('Retorno deve estar presente apenas em funções.', numero_linha)
+
+             # Verificação de uso da condicional else
+            elif token == 'condicional' and lexemas[count_lexema] == 'else':
+                if len(lista_escopo_fechado) == 0 or lista_escopo_fechado[-1][1] != 'condicional':
+                    print_error('Condicional ELSE deve ser aplicada somente após o IF.')
+
+            count_lexema += 1
 
         # Guardando sempre a linha 'anterior' para validação do retorno da função
         linha_anterior = linha
@@ -237,7 +260,6 @@ def verificar_parentese():
 def verificar_ponto_virgula(tokens_lines):
     # Guardando os tokens que serão válidos para casos onde não se finaliza a linha com ponto_virgula
     tokens_validos_inicio = ['condicional', 'funcao', 'procedimento', 'laco']
-
     for numero_linha, linha in tokens_lines.items():
         if linha[-1] != 'ponto_virgula':
             if (linha[0] not in tokens_validos_inicio) and (len(linha)>=1 and linha[0] != 'fecha_chave'):
