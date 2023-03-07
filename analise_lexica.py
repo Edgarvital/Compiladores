@@ -59,7 +59,7 @@ def analise(codigo):
 
     for numero_linha, linha in enumerate(codigo):
 
-        palavras = [x for x in re.split(padrao, linha) if x not in tokens_invalidos]
+        palavras = [token for token in re.split(padrao, linha) if token not in tokens_invalidos]
         for palavra in palavras:
             token = verificar_palavra(palavra)
             if token != False and token != 'Error':
