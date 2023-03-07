@@ -8,16 +8,20 @@ def analise(tabela):
     numLinhas = (tabela[tabela.columns[2:3:]]).values
     tokens_lines = create_line_tokens()
 
+    verificar_escopo(tokens_lines)
     verificar_quantidade(tokens_lines)
+
     verificar_ponto_virgula(tokens_lines)
 
     loop_verificacao()
     print('Analise sintática finalizada, sem erros.')
 
+
 def loop_verificacao():
     for index, token in enumerate(tokens):
         assinatura_if(token, numLinhas[index, 0])
         verificar_atribuicao(token, numLinhas[index, 0])
+        assinatura_procedimento_funcao(token, numLinhas[index, 0])
 
 
 def print_error(mensagem, linha=None):
@@ -139,30 +143,60 @@ def create_line_tokens():
     return lista_tokens
 
 
-def verificar_chave(tokens_lines):
-    # Guardando os tokens que serão válidos
+def verifcar_abertura_chave(linha, posicao, tokens_validos, token, chave):
+    if token == 'abre_chave':
+        if linha[0] not in tokens_validos:
+            print_error('Abertura de chave invalida.',chave)
+        if posicao != (len(linha) - 1):
+            print_error('Abertura de chave invalida.',chave)
+        return True
+    return False
+
+
+def verifcar_fechamento_chave(linha, posicao, token):
+    if token == 'fecha_chave':
+        return True
+    return False
+
+
+def verificar_escopo(tokens_lines):
     tokens_validos_inicio = ['condicional', 'funcao', 'procedimento', 'laco']
-    # Pilha auxiliar para contagem de chaves
     chaveCount = []
-
     for chave, valor in tokens_lines.items():
-        if valor[-1] == 'abre_chave':
-            # Verificando se a abertura de chave está sendo utilizada no padrão correto
-            if valor[0] not in tokens_validos_inicio:
-                print_error('A abertura de chaves deve ocorrer apenas em procedimenos, funções, condicionais e laços.',chave)
-            # Armazenando na pilha o primeiro token, ultimo token e a linha
-            chaveCount.append([valor[-1], valor[0], chave])
-        elif valor[-1] == 'fecha_chave':
-            try:
-                # Guardando valor do que foi retirado da pilha
-                aux = chaveCount.pop()
-                # Verificando se o que foi retirado pertencia a assinatura de uma função, para então saber se ela tinha retorno
-                if aux[1] == 'funcao' and linha_anterior[0] != 'retorno':
-                    print_error('A função necessita de um retorno.', aux[2])
-            except Exception as e:
-                # Na erro ao retirar algo de uma pilha vazia, nos diz que temos mais fecha_chave do que abre_chave
-                print_error('A quantidade de fecha chave é superior ao de abre chave.', chave)
+        for indice, token in enumerate(valor):
+            # Verificar abertura de chave
+            if verifcar_abertura_chave(valor, indice, tokens_validos_inicio, token,chave):
+                chaveCount.append([valor[-1], valor[0], chave])
 
+            # verificar fechamento de chave
+            elif verifcar_fechamento_chave(valor, indice, token):
+                try:
+                    # Guardando valor do que foi retirado da pilha
+                    aux = chaveCount.pop()
+                    # Verificando se o que foi retirado pertencia a assinatura de uma função, para então saber se ela tinha retorno
+                    if aux[1] == 'funcao' and linha_anterior[0] != 'retorno':
+                        print_error('A função necessita de um retorno.', aux[2])
+                except Exception as e:
+                    # Na erro ao retirar algo de uma pilha vazia, nos diz que temos mais fecha_chave do que abre_chave
+                    print_error('A quantidade de fecha chave é superior ao de abre chave.', chave)
+
+            # Verificação de desvio incondicional
+            elif token == 'desvio_incondicional':
+                aux = 0
+                for item in chaveCount:
+                    if 'laco' in item:
+                        aux += 1
+                if aux == 0:
+                    print_error('Desvios incondicionais devem estar presentes apenas em laços.', chave)
+
+            # Verificação de retorno
+            elif token == 'retorno':
+                aux = 0
+                for item in chaveCount:
+                    if 'funcao' in item:
+                        aux += 1
+                if aux == 0:
+                    print_error('Retorno deve estar presente apenas em funções.',chave)
         # Guardando sempre a linha 'anterior' para validação do retorno da função
         linha_anterior = valor
 
@@ -188,7 +222,6 @@ def verificar_parentese():
 
 
 def verificar_quantidade(tokens_lines):
-    verificar_chave(tokens_lines)
     verificar_parentese()
 
 
@@ -199,8 +232,7 @@ def verificar_ponto_virgula(tokens_lines):
 
     for chave, valor in tokens_lines.items():
         if valor[-1] != 'ponto_virgula':
-            if (valor[0] not in tokens_validos_inicio) and (
-                    valor[0] != 'fecha_chave' and valor[-1] != 'fecha_chave' and len(valor) != 1):
+            if (valor[0] not in tokens_validos_inicio) and (len(valor)>=1 and valor[0] != 'fecha_chave'):
                 print_error('Finalização de expressão incorreta.', chave)
 
 
