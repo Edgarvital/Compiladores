@@ -11,7 +11,7 @@ caracteres = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "
 
 caracteres_numericos = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
-caracteres_especiais = [";", "(", ")", "=", "{", "}", "!", ",", ' ']
+caracteres_especiais = [";", "(", ")", "=", "{", "}", "!", ","]
 
 dicionario_caracteres_especiais = {
     ';': 'ponto_virgula',
@@ -28,7 +28,9 @@ operadores_aritmeticos = ['+', "-", "*", "/"]
 
 operadores_booleano = ['==', ">=", "<=", "!=", ">", "<"]
 
-padronizacao = np.concatenate((operadores_booleano, operadores_aritmeticos, caracteres_especiais)) 
+tokens_invalidos = ['',' ', '\n']
+
+padronizacao = np.concatenate((operadores_booleano, operadores_aritmeticos, caracteres_especiais, ['\n',' ']))
 
 operadores = np.concatenate((operadores_booleano, operadores_aritmeticos))
 
@@ -53,11 +55,11 @@ funcao = ['funcao']
 
 def analise(codigo):
     global tabela_tokens
+    padrao = r'(' + '|'.join([re.escape(c) for c in padronizacao]) + ')'
+
     for numero_linha, linha in enumerate(codigo):
 
-        padrao = r'(' + '|'.join([re.escape(c) for c in padronizacao]) + ')'
-        palavras = [x for x in re.split(padrao, linha) if x if " " not in x if "\n" not in x]
-
+        palavras = [x for x in re.split(padrao, linha) if x not in tokens_invalidos]
         for palavra in palavras:
             token = verificar_palavra(palavra)
             if token != False and token != 'Error':
