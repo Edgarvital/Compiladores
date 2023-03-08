@@ -7,13 +7,16 @@ def analise(tabela):
     lexemas = (tabela[tabela.columns[1:2:]]).values
     numLinhas = (tabela[tabela.columns[2:3:]]).values
     tokens_lines = create_line_tokens()
+    try:
+        verificar_escopo(tokens_lines)
+        verificar_parentese()
 
-    verificar_escopo(tokens_lines)
-    verificar_parentese()
+        verificar_ponto_virgula(tokens_lines)
 
-    verificar_ponto_virgula(tokens_lines)
+        loop_verificacao()
+    except Exception as e:
+        print_error('Erro de sintaxe')
 
-    loop_verificacao()
     print('Analise sintática finalizada, sem erros.')
 
 
@@ -24,6 +27,7 @@ def loop_verificacao():
         verificar_atribuicao(token, numLinhas[index, 0])
         assinatura_procedimento_funcao(token, numLinhas[index, 0])
         assinatura_while(token, numLinhas[index, 0])
+        assinatura_print(token, numLinhas[index, 0])
 
 
 def print_error(mensagem, linha=None):
@@ -136,6 +140,17 @@ def assinatura_if(token, linha, lexema):
                             return True
         print_error('Erro na assinatura do IF', linha)
 
+def assinatura_print(token, linha):
+    if (token == 'impressao'):
+        lista_tokens_linha = get_line_tokens(linha)
+        if lista_tokens_linha.pop() == 'ponto_virgula':
+            if lista_tokens_linha.pop() == 'fecha_parentese':
+                if lista_tokens_linha.pop() in ['numerico','identificador', 'booleano']:
+                    if lista_tokens_linha.pop() == 'abre_parentese':
+                        if len(lista_tokens_linha) == 1 and lista_tokens_linha[0] == 'impressao':
+                            return True
+        print_error('Erro na assinatura do PRINT', linha)
+
 def assinatura_else(token, linha, lexema):
     if token == 'condicional' and lexema == 'else':
         lista_tokens_linha = get_line_tokens(linha)
@@ -168,7 +183,7 @@ def create_line_tokens():
 
 def verifcar_abertura_chave(linha, posicao, tokens_validos, token, numero_linha):
     if token == 'abre_chave':
-        if linha[0] not in tokens_validos and (
+        if linha[0] not in tokens_validos and len(linha) > 1 and(
                 linha[0] != 'fecha_chave' and linha[1] != 'condicional' and linha[2] != 'abre_chave'):
             print_error('Abertura de chave invalida.',numero_linha)
         if posicao != (len(linha) - 1):
@@ -191,7 +206,7 @@ def verificar_escopo(tokens_lines):
     for numero_linha, linha in tokens_lines.items():
         for indice, token in enumerate(linha):
             # Verificar abertura de chave
-            if verifcar_abertura_chave(linha, indice, tokens_validos_inicio, token,numero_linha, ):
+            if verifcar_abertura_chave(linha, indice, tokens_validos_inicio, token,numero_linha):
                 chave_Count.append([linha[-1], linha[0], numero_linha])
 
             # verificar fechamento de chave
