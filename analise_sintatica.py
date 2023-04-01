@@ -62,11 +62,24 @@ def verificar_atribuicao_expressao(lista_tokens, linha):
                 print_error('Erro na expressão', linha)
         if len(expressao) == 1 and expressao.pop() in ['booleano', 'numerico', 'identificador']:
             return True
-        elif expressao.pop() in ['numerico', 'identificador']:
-            if expressao.pop() == 'operador_aritmetico':
-                if len(expressao) == 1 and expressao[0] in ['numerico', 'identificador']:
+        elif len(expressao) == 3:
+            if expressao.pop() in ['numerico', 'identificador']:
+                if expressao.pop() == 'operador_aritmetico':
+                    if len(expressao) == 1 and expressao[0] in ['numerico', 'identificador']:
+                        return True
+        else:
+            if expressao.pop() in ['numerico', 'identificador']:
+                if verificar_multiplas_operacoes_expressao_numerica(expressao):
                     return True
         return False
+
+
+def verificar_multiplas_operacoes_expressao_numerica(expressao):
+    if len(expressao) == 0:
+        return True
+    elif len(expressao) >= 2 and expressao.pop() == 'operador_aritmetico':
+        if expressao.pop() in ['numerico', 'identificador']:
+            return verificar_multiplas_operacoes_expressao_numerica(expressao)
 
 
 def verificar_atribuicao_funcao(lista_tokens, linha):
@@ -118,12 +131,15 @@ def verificar_expressao_booleana(lista_tokens, linha):
             expressao.append(lista_tokens.pop())
         except Exception as e:
             print_error('Erro na expressão', linha)
-
-    if expressao.pop() in ['booleano', 'numerico', 'identificador']:
+    if (len(expressao) == 1):
+        if (expressao.pop() in ['booleano', 'identificador']):
+            return True
+    elif expressao.pop() in ['booleano', 'numerico', 'identificador']:
         if expressao.pop() == 'operador_booleano':
             if len(expressao) == 1 and expressao[0] in ['booleano', 'numerico', 'identificador']:
                 return True
     return False
+
 
 def assinatura_while(token, linha):
     if (token == 'laco'):
@@ -135,6 +151,7 @@ def assinatura_while(token, linha):
                         if len(lista_tokens_linha) == 1 and lista_tokens_linha[0] == 'laco':
                             return True
         print_error('Erro na assinatura do While', linha)
+
 
 def assinatura_if(token, linha, lexema):
     if (token == 'condicional' and lexema == 'if'):
@@ -192,9 +209,9 @@ def verifcar_abertura_chave(linha, posicao, tokens_validos, token, numero_linha)
     if token == 'abre_chave':
         if linha[0] not in tokens_validos and len(linha) > 1 and(
                 linha[0] != 'fecha_chave' and linha[1] != 'condicional' and linha[2] != 'abre_chave'):
-            print_error('Abertura de chave invalida.',numero_linha)
+            print_error('Abertura de chave invalida.', numero_linha)
         if posicao != (len(linha) - 1):
-            print_error('Abertura de chave invalida.',numero_linha)
+            print_error('Abertura de chave invalida.', numero_linha)
         return True
     return False
 
@@ -247,7 +264,7 @@ def verificar_escopo(tokens_lines):
                 if aux == 0:
                     print_error('Retorno deve estar presente apenas em funções.', numero_linha)
 
-             # Verificação de uso da condicional else
+            # Verificação de uso da condicional else
             elif token == 'condicional' and lexemas[count_lexema] == 'else':
                 if len(lista_escopo_fechado) == 0 or lista_escopo_fechado[-1][1] != 'condicional':
                     print_error('Condicional ELSE deve ser aplicada somente após o IF.')
@@ -284,7 +301,7 @@ def verificar_ponto_virgula(tokens_lines):
     tokens_validos_inicio = ['condicional', 'funcao', 'procedimento', 'laco']
     for numero_linha, linha in tokens_lines.items():
         if linha[-1] != 'ponto_virgula':
-            if (linha[0] not in tokens_validos_inicio) and (len(linha)>=1 and linha[0] != 'fecha_chave'):
+            if (linha[0] not in tokens_validos_inicio) and (len(linha) >= 1 and linha[0] != 'fecha_chave'):
                 print_error('Finalização de expressão incorreta.', numero_linha)
 
 
