@@ -2,10 +2,17 @@ import pandas as pd
 
 
 def analise(tabela):
-    global tokens, lexemas, numLinhas, tokens_lines
+    global tokens, lexemas, numLinhas, tokens_lines, tabela_simbolos
     tokens = (tabela[tabela.columns[0:1:]]).values
     lexemas = (tabela[tabela.columns[1:2:]]).values
     numLinhas = (tabela[tabela.columns[2:3:]]).values
+
+    tabela_simbolos = pd.DataFrame(
+        columns=['Token', 'Lexema', 'Tipo', 'linha', 'valor',
+                 'qntParametros', 'variaveis', 'tiposVar','escopo'])
+#Exemplo  de add
+#tabela_simbolos.loc[len(tabela_simbolos)] = ["IdVariavel", tabela_tokens["Lexema"][i], tabela_tokens["Lexema"][i - 1], tabela_tokens["linha"][i], valor,"-","-","-",escopo]
+
     tokens_lines = create_line_tokens()
     try:
         verificar_escopo(tokens_lines)
@@ -17,7 +24,7 @@ def analise(tabela):
     except Exception as e:
         print_error('Erro de sintaxe')
 
-    print('Analise sintática finalizada, sem erros.')
+    print(tabela_simbolos.to_string())
 
 
 def loop_verificacao():
@@ -25,7 +32,7 @@ def loop_verificacao():
         assinatura_if(token, numLinhas[index, 0], lexemas[index])
         assinatura_else(token, numLinhas[index, 0], lexemas[index])
         verificar_atribuicao(token, numLinhas[index, 0])
-        assinatura_procedimento_funcao(token, numLinhas[index, 0])
+        assinatura_procedimento_funcao(token, numLinhas[index, 0], index)
         assinatura_while(token, numLinhas[index, 0])
         assinatura_print(token, numLinhas[index, 0])
 
@@ -281,7 +288,9 @@ def verificar_ponto_virgula(tokens_lines):
                 print_error('Finalização de expressão incorreta.', numero_linha)
 
 
-def assinatura_procedimento_funcao(token, numero_linha):
+def assinatura_procedimento_funcao(token, numero_linha, index):
+    tipo = ""
+    qtd_parametros = 0
     # Verificação do primeiro token, para saber se corresponde ao padrão dado a função/procedimento
     if (token == 'procedimento') or (token == 'funcao'):
 
@@ -295,6 +304,9 @@ def assinatura_procedimento_funcao(token, numero_linha):
         # Verificação do conteudo presente entre o '(' (abre_parentese) e ')' (fecha_parentese)
         if (linha[2] != 'abre_parentese') and (linha[-2] != 'fecha_parentese'):
             print_error('Incorreta a assinatura da funcao/procedimento.', numero_linha)
+
+        #Adição na tabela de simbolos
+        tabela_simbolos.loc[len(tabela_simbolos)] = [token[0], lexemas[index+1][0], '-', numero_linha, '-',"qtd_parametros","val 1, val 2","tipo delas",'-']
 
         # Utilização de função auxiliar os argumentos presentes na função/procedimento
         verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha)
