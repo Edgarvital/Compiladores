@@ -14,11 +14,11 @@ funcao teste1(int arg1, int arg2){
 }
 
 procedimento tupi (int param1, int param2, int param3){
-    if (param2 > 5){
+    if (true){
         int localVar1 = param1 + 5;
     }
     int localVar2 = 7;
-    int localVar3 = param1 + param3;
+    int localVar3 = param1 + param3 + param2 - 1;
 }
 
 int myResult = myFunction(3, 4);
