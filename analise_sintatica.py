@@ -322,7 +322,8 @@ def assinatura_procedimento_funcao(token, numero_linha, index):
 
 
         # Utilização de função auxiliar os argumentos presentes na função/procedimento
-        lista_lexemas = verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha, index)
+        verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha, index)
+        lista_lexemas = gerar_lista_lexemas_argumentos(linha[3:-2],index+2)
         tipos_argumentos = [item[0] for item in lista_lexemas]
         identificadores_argumentos = [item[1] for item in lista_lexemas]
 
@@ -335,25 +336,16 @@ def assinatura_procedimento_funcao(token, numero_linha, index):
 def verificao_argumento_procedimento_funcao(argumentos, linha, index):
     # Separação dos argumentos, separando a lista em sub-listas a partir do token 'virgula'
     lista_tokens = []
-    lista_lexemas = []
     sublista = []
-    sublista_lexemas = []
-    # Ajuste de index para resgate do lexema
-    cont = index + 2
 
     for token in argumentos:
-        cont +=1
         if token == 'virgula':
             lista_tokens.append(sublista)
-            lista_lexemas.append(sublista_lexemas)
             sublista = []
-            sublista_lexemas = []
         else:
             sublista.append(token)
-            sublista_lexemas.append(lexemas[cont][0])
 
     lista_tokens.append(sublista)
-    lista_lexemas.append(sublista_lexemas)
 
     # Verificando se é respeitada a padronização de tokens na passagem dos argumentos
     for intervalo_tokens in lista_tokens:
@@ -362,4 +354,20 @@ def verificao_argumento_procedimento_funcao(argumentos, linha, index):
                 print_error('Incorreta a passagem dos argumentos.', linha)
         else:
             print_error('Incorreta a passagem dos argumentos.', linha)
+
+
+def gerar_lista_lexemas_argumentos(argumentos,index):
+    lista_lexemas = []
+    sublista_lexemas = []
+    cont = index
+
+    for lexema in argumentos:
+        cont +=1
+        if lexema == 'virgula':
+            lista_lexemas.append(sublista_lexemas)
+            sublista_lexemas = []
+        else:
+            sublista_lexemas.append(lexemas[cont][0])
+    lista_lexemas.append(sublista_lexemas)
+
     return lista_lexemas
