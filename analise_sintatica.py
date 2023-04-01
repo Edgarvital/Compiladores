@@ -322,25 +322,40 @@ def assinatura_procedimento_funcao(token, numero_linha, index):
         if (linha[2] != 'abre_parentese') and (linha[-2] != 'fecha_parentese'):
             print_error('Incorreta a assinatura da funcao/procedimento.', numero_linha)
 
-        #Adição na tabela de simbolos
-        tabela_simbolos.loc[len(tabela_simbolos)] = [token[0], lexemas[index+1][0], '-', numero_linha, '-',"qtd_parametros","val 1, val 2","tipo delas",'-']
 
         # Utilização de função auxiliar os argumentos presentes na função/procedimento
-        verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha)
+        lista_lexemas = verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha, index)
+        tipos_argumentos = [item[0] for item in lista_lexemas]
+        identificadores_argumentos = [item[1] for item in lista_lexemas]
+
+        # Adição na tabela de simbolos
+        tabela_simbolos.loc[len(tabela_simbolos)] = \
+            [token[0], lexemas[index + 1][0], '-', numero_linha, '-',
+             len(lista_lexemas), identificadores_argumentos, tipos_argumentos, '-']
 
 
-def verificao_argumento_procedimento_funcao(argumentos, linha):
+def verificao_argumento_procedimento_funcao(argumentos, linha, index):
     # Separação dos argumentos, separando a lista em sub-listas a partir do token 'virgula'
     lista_tokens = []
+    lista_lexemas = []
     sublista = []
+    sublista_lexemas = []
+    # Ajuste de index para resgate do lexema
+    cont = index + 2
+
     for token in argumentos:
+        cont +=1
         if token == 'virgula':
             lista_tokens.append(sublista)
+            lista_lexemas.append(sublista_lexemas)
             sublista = []
+            sublista_lexemas = []
         else:
             sublista.append(token)
+            sublista_lexemas.append(lexemas[cont][0])
 
     lista_tokens.append(sublista)
+    lista_lexemas.append(sublista_lexemas)
 
     # Verificando se é respeitada a padronização de tokens na passagem dos argumentos
     for intervalo_tokens in lista_tokens:
@@ -349,3 +364,4 @@ def verificao_argumento_procedimento_funcao(argumentos, linha):
                 print_error('Incorreta a passagem dos argumentos.', linha)
         else:
             print_error('Incorreta a passagem dos argumentos.', linha)
+    return lista_lexemas
