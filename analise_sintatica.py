@@ -306,8 +306,6 @@ def verificar_ponto_virgula(tokens_lines):
 
 
 def assinatura_procedimento_funcao(token, numero_linha, index):
-    tipo = ""
-    qtd_parametros = 0
     # Verificação do primeiro token, para saber se corresponde ao padrão dado a função/procedimento
     if (token == 'procedimento') or (token == 'funcao'):
 
