@@ -1,6 +1,7 @@
 boolean vap = true;
 if (myVar2 > 10){
     int myVar4 = myVar2 + 5;
+    int myVar4 = myVar2;
 }else{
     int pokemon = 5;
 }
@@ -11,8 +12,10 @@ funcao teste1(int arg1, int arg2){
 }
 
 procedimento tupi (int param1, int param2, int param3){
+    int val1;
     if (true){
         int localVar1 = param1 + 5;
+        val1;
     }
     int localVar2 = 7;
     int localVar3 = param1 + param3 + param2 - 1;
