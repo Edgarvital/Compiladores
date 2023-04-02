@@ -315,8 +315,6 @@ def verificar_ponto_virgula(tokens_lines):
 
 
 def assinatura_procedimento_funcao(token, numero_linha, index):
-    tipo = ""
-    qtd_parametros = 0
     # Verificação do primeiro token, para saber se corresponde ao padrão dado a função/procedimento
     if (token == 'procedimento') or (token == 'funcao'):
 
@@ -331,17 +329,24 @@ def assinatura_procedimento_funcao(token, numero_linha, index):
         if (linha[2] != 'abre_parentese') and (linha[-2] != 'fecha_parentese'):
             print_error('Incorreta a assinatura da funcao/procedimento.', numero_linha)
 
-        #Adição na tabela de simbolos
-        tabela_simbolos.loc[len(tabela_simbolos)] = [token[0], lexemas[index+1][0], '-', numero_linha, '-',"qtd_parametros","val 1, val 2","tipo delas",'-']
 
         # Utilização de função auxiliar os argumentos presentes na função/procedimento
-        verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha)
+        verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha, index)
+        lista_lexemas = gerar_lista_lexemas_argumentos(linha[3:-2],index+2)
+        tipos_argumentos = [item[0] for item in lista_lexemas]
+        identificadores_argumentos = [item[1] for item in lista_lexemas]
+
+        # Adição na tabela de simbolos
+        tabela_simbolos.loc[len(tabela_simbolos)] = \
+            [token[0], lexemas[index + 1][0], '-', numero_linha, '-',
+             len(lista_lexemas), identificadores_argumentos, tipos_argumentos, '-']
 
 
-def verificao_argumento_procedimento_funcao(argumentos, linha):
+def verificao_argumento_procedimento_funcao(argumentos, linha, index):
     # Separação dos argumentos, separando a lista em sub-listas a partir do token 'virgula'
     lista_tokens = []
     sublista = []
+
     for token in argumentos:
         if token == 'virgula':
             lista_tokens.append(sublista)
@@ -358,3 +363,20 @@ def verificao_argumento_procedimento_funcao(argumentos, linha):
                 print_error('Incorreta a passagem dos argumentos.', linha)
         else:
             print_error('Incorreta a passagem dos argumentos.', linha)
+
+
+def gerar_lista_lexemas_argumentos(argumentos,index):
+    lista_lexemas = []
+    sublista_lexemas = []
+    cont = index
+
+    for lexema in argumentos:
+        cont +=1
+        if lexema == 'virgula':
+            lista_lexemas.append(sublista_lexemas)
+            sublista_lexemas = []
+        else:
+            sublista_lexemas.append(lexemas[cont][0])
+    lista_lexemas.append(sublista_lexemas)
+
+    return lista_lexemas
