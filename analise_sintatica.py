@@ -33,7 +33,7 @@ def determinar_linha_escopo(lista_escopo, linha):
             if aux != "":
                 aux = escopo[1] + "," + aux
             else:
-                aux = escopo[1]
+                aux = escopo[1] + '[' + str(escopo[2]) + ',' + str(escopo[3]) + ']'
 
     if aux != "":
         return aux
