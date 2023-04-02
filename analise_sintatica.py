@@ -14,22 +14,21 @@ def analise(tabela):
     tokens_lines = create_line_tokens()
     try:
         lista_escopo = verificar_escopo(tokens_lines)
-        #print(verificar_linha_escopo(lista_escopo,10))
 
         verificar_parentese()
 
         verificar_ponto_virgula(tokens_lines)
 
-        loop_verificacao()
+        loop_verificacao(lista_escopo)
     except Exception as e:
         print_error('Erro de sintaxe')
 
     return tabela_simbolos.to_string()
 
-def verificar_linha_escopo(lista_escopo, linha):
+def determinar_linha_escopo(lista_escopo, linha):
     # Verificar se está em uma condficional
     for escopo in lista_escopo:
-        if (escopo[1] == "condicional") and (linha >= escopo[2] and linha <= escopo[3]):
+        if (escopo[1] == "condicional" or escopo[1] == "fecha_chave") and (linha >= escopo[2] and linha <= escopo[3]):
             return escopo[1]
 
     # Verificar se está em um laco
@@ -44,11 +43,11 @@ def verificar_linha_escopo(lista_escopo, linha):
 
     return "global"
 
-def loop_verificacao():
+def loop_verificacao(lista_escopo):
     for index, token in enumerate(tokens):
         assinatura_if(token, numLinhas[index, 0], lexemas[index])
         assinatura_else(token, numLinhas[index, 0], lexemas[index])
-        verificar_atribuicao(token, numLinhas[index, 0], index)
+        verificar_atribuicao(token, numLinhas[index, 0], index, lista_escopo)
         assinatura_procedimento_funcao(token, numLinhas[index, 0], index)
         assinatura_while(token, numLinhas[index, 0])
         assinatura_print(token, numLinhas[index, 0])
@@ -124,7 +123,7 @@ def verificar_atribuicao_funcao(lista_tokens, linha):
     return False
 
 
-def verificar_atribuicao(token, linha, index):
+def verificar_atribuicao(token, linha, index, lista_escopo):
     valor = []
     if (token == 'operador_atribuicao'):
         lista_tokens_linha = get_line_tokens(linha)
@@ -138,7 +137,7 @@ def verificar_atribuicao(token, linha, index):
                             valor.append(lexemas[token_index][0])
                         tabela_simbolos.loc[len(tabela_simbolos)] = ['identificador', lexemas[index-1][0], lexemas[index-2][0],
                                                                      linha, ' '.join(valor[:-1]), "-",
-                                                                     "-", "-", '-']
+                                                                     "-", "-", determinar_linha_escopo(lista_escopo,linha)]
                         return True
         else:
             lista_tokens_linha = get_line_tokens(linha)
@@ -146,6 +145,11 @@ def verificar_atribuicao(token, linha, index):
                 if lista_tokens_linha.pop() == 'operador_atribuicao':
                     if lista_tokens_linha.pop() == 'identificador':
                         if lista_tokens_linha.pop() == 'tipo':
+                            tabela_simbolos.loc[len(tabela_simbolos)] = ['identificador', lexemas[index - 1][0],
+                                                                         lexemas[index - 2][0],
+                                                                         linha, ' '.join(valor[:-1]), "-",
+                                                                         "-", "-",
+                                                                         determinar_linha_escopo(lista_escopo, linha)]
                             return True
         print_error('Erro na atribuicao', linha)
 
@@ -257,7 +261,10 @@ def verificar_escopo(tokens_lines):
         for indice, token in enumerate(linha):
             # Verificar abertura de chave
             if verifcar_abertura_chave(linha, indice, tokens_validos_inicio, token,numero_linha):
-                chave_Count.append([linha[-1], linha[0], numero_linha])
+                if linha[0] == "fecha_chave":
+                    chave_Count.append([linha[-1], linha[1], numero_linha])
+                else:
+                    chave_Count.append([linha[-1], linha[0], numero_linha])
 
             # verificar fechamento de chave
             elif verifcar_fechamento_chave(token):
