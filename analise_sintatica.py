@@ -8,8 +8,8 @@ def analise(tabela):
     numLinhas = (tabela[tabela.columns[2:3:]]).values
 
     tabela_simbolos = pd.DataFrame(
-        columns=['Token', 'Lexema', 'Tipo', 'linha', 'valor',
-                 'qntParametros', 'variaveis', 'tiposVar','escopo'])
+        columns=['Token', 'Lexema', 'Tipo', 'Linha', 'Valor',
+                 'QntParametros', 'Variaveis', 'TiposVar', 'Escopo'])
 
     tokens_lines = create_line_tokens()
     try:
@@ -23,7 +23,7 @@ def analise(tabela):
     except Exception as e:
         print_error('Erro de sintaxe')
 
-    return tabela_simbolos.to_string()
+    return tabela_simbolos
 
 def determinar_linha_escopo(lista_escopo, linha):
     aux = ""

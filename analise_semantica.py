@@ -9,12 +9,31 @@ def analise(tabela_lexica, tabela_sintatica):
     tokens_lines = create_line_tokens()
     lexemas_lines = create_line_lexemas()
     try:
-        loop_verificacao()
+        loop_verificacao(tabela_sintatica)
     except Exception as e:
-        print_error('Erro de sintaxe')
+        print_error('Erro de semantica')
 
-def loop_verificacao():
-    return 'peipei'
+def loop_verificacao(tabela):
+    for index, linha in tabela.iterrows():
+        verificar_identificador(linha, index, tabela)
+
+def verificar_identificador(linha, index, tabela):
+    verificar_tipo_identificador_repetido(linha, index, tabela)
+
+def verificar_tipo_identificador_repetido(linha, index, tabela):
+    if (linha['Token'] == 'identificador'):
+        for i in range(index):
+            if (linha['Lexema'] == tabela.iloc[i]['Lexema']):
+                if (linha['Tipo'] == tabela.iloc[i]['Tipo']):
+                    return True
+                else:
+                    print_error('Erro Semântico - Tipos Diferentes no mesmo Identificador', linha['Linha'])
+                    exit()
+    return False
+
+
+
+
 
 def print_error(mensagem, linha=None):
     if linha != None:
