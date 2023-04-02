@@ -31,7 +31,7 @@ def loop_verificacao():
     for index, token in enumerate(tokens):
         assinatura_if(token, numLinhas[index, 0], lexemas[index])
         assinatura_else(token, numLinhas[index, 0], lexemas[index])
-        verificar_atribuicao(token, numLinhas[index, 0])
+        verificar_atribuicao(token, numLinhas[index, 0], index)
         assinatura_procedimento_funcao(token, numLinhas[index, 0], index)
         assinatura_while(token, numLinhas[index, 0])
         assinatura_print(token, numLinhas[index, 0])
@@ -57,7 +57,8 @@ def verificar_atribuicao_expressao(lista_tokens, linha):
         expressao = []
         while (lista_tokens[-1] != 'operador_atribuicao'):
             try:
-                expressao.append(lista_tokens.pop())
+                valor_expressao = lista_tokens.pop()
+                expressao.append(valor_expressao)
             except Exception as e:
                 print_error('Erro na expressão', linha)
         if len(expressao) == 1 and expressao.pop() in ['booleano', 'numerico', 'identificador']:
@@ -106,13 +107,21 @@ def verificar_atribuicao_funcao(lista_tokens, linha):
     return False
 
 
-def verificar_atribuicao(token, linha):
+def verificar_atribuicao(token, linha, index):
+    valor = []
     if (token == 'operador_atribuicao'):
         lista_tokens_linha = get_line_tokens(linha)
         if verificar_atribuicao_expressao(lista_tokens_linha, linha):
             if lista_tokens_linha.pop() == 'operador_atribuicao':
                 if lista_tokens_linha.pop() == 'identificador':
                     if lista_tokens_linha.pop() == 'tipo':
+                        token_index = index
+                        while(lexemas[token_index] != ';'):
+                            token_index += 1
+                            valor.append(lexemas[token_index][0])
+                        tabela_simbolos.loc[len(tabela_simbolos)] = ['identificador', lexemas[index-1][0], lexemas[index-2][0],
+                                                                     linha, ' '.join(valor[:-1]), "-",
+                                                                     "-", "-", '-']
                         return True
         else:
             lista_tokens_linha = get_line_tokens(linha)
