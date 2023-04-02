@@ -1,6 +1,3 @@
-int myVar1 = 5 + 3;
-int myVar2 = myVar1 * 2;
-int myVar3 = 6;
 boolean vap = true;
 if (myVar2 > 10){
     int myVar4 = myVar2 + 5;

@@ -9,4 +9,5 @@ lexica = analise_lexica.analise(codigo)
 #print(lexica.to_string())
 
 sintatica = analise_sintatica.analise(lexica)
+print(sintatica)
 

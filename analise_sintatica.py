@@ -10,12 +10,12 @@ def analise(tabela):
     tabela_simbolos = pd.DataFrame(
         columns=['Token', 'Lexema', 'Tipo', 'linha', 'valor',
                  'qntParametros', 'variaveis', 'tiposVar','escopo'])
-#Exemplo  de add
-#tabela_simbolos.loc[len(tabela_simbolos)] = ["IdVariavel", tabela_tokens["Lexema"][i], tabela_tokens["Lexema"][i - 1], tabela_tokens["linha"][i], valor,"-","-","-",escopo]
 
     tokens_lines = create_line_tokens()
     try:
-        verificar_escopo(tokens_lines)
+        lista_escopo = verificar_escopo(tokens_lines)
+        #print(verificar_linha_escopo(lista_escopo,10))
+
         verificar_parentese()
 
         verificar_ponto_virgula(tokens_lines)
@@ -24,8 +24,25 @@ def analise(tabela):
     except Exception as e:
         print_error('Erro de sintaxe')
 
-    print(tabela_simbolos.to_string())
+    return tabela_simbolos.to_string()
 
+def verificar_linha_escopo(lista_escopo, linha):
+    # Verificar se está em uma condficional
+    for escopo in lista_escopo:
+        if (escopo[1] == "condicional") and (linha >= escopo[2] and linha <= escopo[3]):
+            return escopo[1]
+
+    # Verificar se está em um laco
+    for escopo in lista_escopo:
+        if (escopo[1] == "laco") and (linha >= escopo[2] and linha <= escopo[3]):
+            return escopo[1]
+
+    #Verificar se está em um escopo de função ou procedimento
+    for escopo in lista_escopo:
+        if(escopo[1] == "funcao" or escopo[1] == "procedimento") and (linha >= escopo[2] and linha<= escopo[3]):
+            return escopo[1]
+
+    return "global"
 
 def loop_verificacao():
     for index, token in enumerate(tokens):
@@ -238,6 +255,9 @@ def verificar_escopo(tokens_lines):
                 try:
                     # Guardando valor do que foi retirado da pilha
                     aux = chave_Count.pop()
+                    # Adicionar a linha de fechamento do escopo
+                    aux.append(numero_linha)
+                    # Adiciona o lexema
                     lista_escopo_fechado.append(aux)
                     # Verificando se o que foi retirado pertencia a assinatura de uma função, para então saber se ela tinha retorno
                     if aux[1] == 'funcao' and linha_anterior[0] != 'retorno':
@@ -278,6 +298,8 @@ def verificar_escopo(tokens_lines):
     if (len(chave_Count) > 0):
         aux = chave_Count.pop()
         print_error('A quantidade de abre chave é superior ao de fecha chave.', aux[2])
+
+    return lista_escopo_fechado
 
 
 def verificar_parentese():
