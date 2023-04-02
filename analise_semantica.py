@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def analise(tabela_lexica, tabela_sintatica):
     global tokens, lexemas, numLinhas, tokens_lines, lexemas_lines, tabela_simbolos
     tokens = (tabela_lexica[tabela_lexica.columns[0:1:]]).values
@@ -11,36 +12,50 @@ def analise(tabela_lexica, tabela_sintatica):
     try:
         loop_verificacao(tabela_sintatica)
     except Exception as e:
-        print_error('Erro de semantica')
+        print_error(e)
+
 
 def loop_verificacao(tabela):
     for index, linha in tabela.iterrows():
         verificar_identificador(linha, index, tabela)
 
+
 def verificar_identificador(linha, index, tabela):
     verificar_tipo_identificador_repetido(linha, index, tabela)
 
+
 def verificar_tipo_identificador_repetido(linha, index, tabela):
     if (linha['Token'] == 'identificador'):
-        for i in range(index):
-            if (linha['Lexema'] == tabela.iloc[i]['Lexema']):
-                if (linha['Tipo'] == tabela.iloc[i]['Tipo']):
-                    return True
-                else:
-                    print_error('Erro Semântico - Tipos Diferentes no mesmo Identificador', linha['Linha'])
-                    exit()
+        for linha_tabela in range(index):
+            if (tabela.iloc[linha_tabela]['Token'] == 'identificador'):
+                if (linha['Lexema'] == tabela.iloc[linha_tabela]['Lexema']):
+                    if (verificar_escopo_identificador_repetido(linha, tabela.iloc[linha_tabela])):
+                        if (linha['Tipo'] == tabela.iloc[linha_tabela]['Tipo']):
+                            return True
+                        else:
+                            print_error('Atribuição de tipos diferentes no mesmo identificador', linha['Linha'])
+                            exit()
     return False
 
 
+def verificar_escopo_identificador_repetido(linha, linha_tabela):
+    if (linha_tabela['Escopo'] == 'global'):
+        return True;
+    escopo = linha_tabela['Escopo'].split('[')[1].split(']')[0].split(',')
 
+    if (escopo):
+        if int(escopo[0]) <= int(linha['Linha']) <= int(escopo[1]):
+            return True
+    return False
 
 
 def print_error(mensagem, linha=None):
     if linha != None:
-        print("Erro de Sintaxe:", mensagem, 'Linha:', linha)
+        print("Erro de Semantica:", mensagem, 'Linha:', linha)
     else:
-        print("Erro de Sintaxe:", mensagem)
+        print("Erro de Semantica:", mensagem)
     exit()
+
 
 def create_line_lexemas():
     lista_lexemas = {}
@@ -58,6 +73,7 @@ def create_line_lexemas():
 
     lista_lexemas[numLinhas[last_position, 0]] = [lexemas_line[last_position]]
     return lista_lexemas
+
 
 def get_line_lexemas(linha):
     try:
@@ -81,6 +97,7 @@ def create_line_tokens():
 
     lista_tokens[numLinhas[last_position, 0]] = [tokens_line[last_position]]
     return lista_tokens
+
 
 def get_line_tokens(linha):
     try:

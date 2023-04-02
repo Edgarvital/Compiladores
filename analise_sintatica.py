@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 def analise(tabela):
     global tokens, lexemas, numLinhas, tokens_lines, tabela_simbolos
     tokens = (tabela[tabela.columns[0:1:]]).values
