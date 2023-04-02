@@ -24,6 +24,10 @@ print(myResult);
 int myVar5 = 3;
 int myVar6 = 6;
 while(myVar5 < 4){
-    int myVar7 = teste1(myVar5, myVar6);
+    if (true){
+        while(myVar5 < 4){
+            int myVar7 = teste1(myVar5, myVar6);
+        }
+    }
     tupi( myVar1, myVar2, myVar3);
 }

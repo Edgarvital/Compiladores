@@ -26,21 +26,17 @@ def analise(tabela):
     return tabela_simbolos.to_string()
 
 def determinar_linha_escopo(lista_escopo, linha):
+    aux = ""
     # Verificar se está em uma condficional
     for escopo in lista_escopo:
-        if (escopo[1] == "condicional" or escopo[1] == "fecha_chave") and (linha >= escopo[2] and linha <= escopo[3]):
-            return escopo[1]
+        if linha >= escopo[2] and linha<= escopo[3]:
+            if aux != "":
+                aux = escopo[1] + "," + aux
+            else:
+                aux = escopo[1]
 
-    # Verificar se está em um laco
-    for escopo in lista_escopo:
-        if (escopo[1] == "laco") and (linha >= escopo[2] and linha <= escopo[3]):
-            return escopo[1]
-
-    #Verificar se está em um escopo de função ou procedimento
-    for escopo in lista_escopo:
-        if(escopo[1] == "funcao" or escopo[1] == "procedimento") and (linha >= escopo[2] and linha<= escopo[3]):
-            return escopo[1]
-
+    if aux != "":
+        return aux
     return "global"
 
 def loop_verificacao(lista_escopo):
