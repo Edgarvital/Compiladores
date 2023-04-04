@@ -1,6 +1,3 @@
-import pandas as pd
-
-
 def analise(tabela_lexica, tabela_sintatica):
     global tokens, lexemas, numLinhas, tokens_lines, lexemas_lines, tabela_simbolos
     tokens = (tabela_lexica[tabela_lexica.columns[0:1:]]).values
@@ -14,7 +11,6 @@ def analise(tabela_lexica, tabela_sintatica):
         loop_verificacao(tabela_sintatica)
     except Exception as e:
         print_error(e)
-
 
 def loop_verificacao(tabela):
     for index, linha in tabela.iterrows():
@@ -78,16 +74,13 @@ def validar_parametros(lista_argumentos, nome, tabela, linha):
                     print_error('Tipo do ' + str(index + 1) + 'º argumento está incorreto', linha['Linha'])
                     exit()
 
-
 def verificar_identificador(linha, index, tabela):
     verificar_tipo_identificador_repetido(linha, index, tabela)
     verificar_variaveis_atribuicao(linha, index, tabela)
 
-
 def verificar_variaveis_atribuicao(linha, index, tabela):
     if (linha['Token'] == 'identificador'):
         verificar_tokens_lexemas_atribuicao(linha, index, tabela)
-
 
 def verificar_tokens_lexemas_atribuicao(linha, index, tabela):
     lexemas = get_lexema_identificadores_atribuicao(linha)
@@ -114,9 +107,6 @@ def verificar_tokens_lexemas_atribuicao(linha, index, tabela):
     verificar_tipo_boolean_atribuicao(linha, linha_boolean)
     return True
 
-
-
-
 def verificar_tipo_inteiro_atribuicao(linha):
     if linha['Tipo'] == 'int':
         if 'true' in linha['Valor'] or 'false' in linha['Valor']:
@@ -130,7 +120,6 @@ def verificar_tipo_boolean_atribuicao(linha, linha_boolean):
         else:
             print_error('O identificador é do tipo boolean, só é possivel atribuir um boolean a ele', linha['Linha'])
 
-
 def get_lexema_identificadores_atribuicao(linha):
     line = linha['Linha']
     tokens = get_line_tokens(line)
@@ -140,7 +129,6 @@ def get_lexema_identificadores_atribuicao(linha):
         if (tokens.pop() == 'identificador'):
             lista_lexemas.append(lexemas[len(tokens)])
     return lista_lexemas
-
 
 def verificar_tipo_identificador_repetido(linha, index, tabela):
     if (linha['Token'] == 'identificador'):
@@ -154,7 +142,6 @@ def verificar_tipo_identificador_repetido(linha, index, tabela):
                             print_error('Atribuição de tipos diferentes no mesmo identificador', linha['Linha'])
     return False
 
-
 def verificar_escopo_identificador_repetido(linha, linha_tabela):
     if (linha_tabela['Escopo'] == 'global'):
         return True;
@@ -165,14 +152,12 @@ def verificar_escopo_identificador_repetido(linha, linha_tabela):
             return True
     return False
 
-
 def print_error(mensagem, linha=None):
     if linha != None:
         print("Erro de Semantica:", mensagem, 'Linha:', linha)
     else:
         print("Erro de Semantica:", mensagem)
     exit()
-
 
 def create_line_lexemas():
     lista_lexemas = {}
@@ -190,7 +175,6 @@ def create_line_lexemas():
 
     lista_lexemas[numLinhas[last_position, 0]] = [lexemas_line[last_position]]
     return lista_lexemas
-
 
 def get_line_lexemas(linha):
     try:
@@ -215,7 +199,6 @@ def create_line_tokens():
 
     lista_tokens[numLinhas[last_position, 0]] = [tokens_line[last_position]]
     return lista_tokens
-
 
 def get_line_tokens(linha):
     try:

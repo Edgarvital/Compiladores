@@ -32,7 +32,7 @@ print(myResult);
 
 int myVar5 = 3;
 int myVar6 = 6;
-boolean paz = True;
+boolean paz = true;
 while(myVar5 < 4){
     if (true){
         while(myVar5 < 4){
