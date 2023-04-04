@@ -11,7 +11,7 @@ tabela_lexica = analise_lexica.analise(codigo)
 
 tabela_sintatica = analise_sintatica.analise(tabela_lexica)
 
-print(tabela_sintatica)
+print(tabela_sintatica.to_string())
 
 
 semantico = analise_semantica.analise(tabela_lexica, tabela_sintatica)
