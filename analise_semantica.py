@@ -66,7 +66,7 @@ def validar_parametros(lista_argumentos, nome, tabela, linha):
             # Se não for uma varivel só pode ser um valor numero ou boolean
 
             # Verifica se é boolean
-            if argumento == 'True' or argumento == 'False':
+            if argumento == 'true' or argumento == 'false':
                 # Verifica se o tipo da variavel bate com o tipo esperado pela função
                 if tipos_parametros[index] != 'boolean':
                     print_error('Tipo do ' + str(index + 1) + 'º argumento está incorreto', linha['Linha'])
