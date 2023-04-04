@@ -12,10 +12,12 @@ def analise(tabela_lexica, tabela_sintatica):
     except Exception as e:
         print_error(e)
 
+
 def loop_verificacao(tabela):
     for index, linha in tabela.iterrows():
-        verificar_identificador(linha, index, tabela)
-        verificar_chamada_funcao_procedimento(linha, index, tabela)
+        chamada_funcao = verificar_chamada_funcao_procedimento(linha, index, tabela)
+        verificar_identificador(linha, index, tabela, chamada_funcao)
+
 
 def verificar_chamada_funcao_procedimento(linha, index, tabela):
     # Recuperação dos indices das funcoes
@@ -30,15 +32,18 @@ def verificar_chamada_funcao_procedimento(linha, index, tabela):
 
     # Verificação de atribuição com procedimento
     for lexema in lexemas_procedimentos:
-        if lexema+'(' in linha['Valor']:
+        if lexema + '(' in linha['Valor']:
             print_error('Procedimento não pode estar presente em uma atribuição', linha['Linha'])
             exit()
 
     # Verificação de função
     for lexema in lexemas_funcoes:
-        if lexema+'(' in linha['Valor']:
+        if lexema + '(' in linha['Valor']:
             lista_argumentos = linha['Valor'].split('(')[1].split(')')[0].split(',')
             validar_parametros(lista_argumentos, lexema, tabela, linha)
+            return True
+    return False
+
 
 def validar_parametros(lista_argumentos, nome, tabela, linha):
     # Nome varia entre os possiveis nome de uma funcao e procedimento
@@ -74,15 +79,18 @@ def validar_parametros(lista_argumentos, nome, tabela, linha):
                     print_error('Tipo do ' + str(index + 1) + 'º argumento está incorreto', linha['Linha'])
                     exit()
 
-def verificar_identificador(linha, index, tabela):
+
+def verificar_identificador(linha, index, tabela, chamada_funcao):
     verificar_tipo_identificador_repetido(linha, index, tabela)
-    verificar_variaveis_atribuicao(linha, index, tabela)
+    verificar_variaveis_atribuicao(linha, index, tabela, chamada_funcao)
 
-def verificar_variaveis_atribuicao(linha, index, tabela):
+
+def verificar_variaveis_atribuicao(linha, index, tabela, chamada_funcao):
     if (linha['Token'] == 'identificador'):
-        verificar_tokens_lexemas_atribuicao(linha, index, tabela)
+        verificar_tokens_lexemas_atribuicao(linha, index, tabela, chamada_funcao)
 
-def verificar_tokens_lexemas_atribuicao(linha, index, tabela):
+
+def verificar_tokens_lexemas_atribuicao(linha, index, tabela, chamada_funcao):
     lexemas = get_lexema_identificadores_atribuicao(linha)
     linha_boolean = None
     count = 0
@@ -93,32 +101,37 @@ def verificar_tokens_lexemas_atribuicao(linha, index, tabela):
                 if linha['Tipo'] == linha_tabela['Tipo']:
                     count += 1
                 else:
-                    print_error('Tipo de variavel incompativel na atribuição', linha['Linha'])
+                    if chamada_funcao == False:
+                        print_error('Tipo de variavel incompativel na atribuição', linha['Linha'])
                 if linha_tabela['Tipo'] == 'boolean':
-                    #Salva o boolean que está dentro do valor da linha atual da tabela que estamos verificando
+                    # Salva o boolean que está dentro do valor da linha atual da tabela que estamos verificando
                     linha_boolean = linha_tabela
         if count != len(lexemas):
-            #Verificar os parametros da função antes de retornar o erro:
-                #print_error('Identificador invalido, ele ainda não foi declarado!', linha['Linha'])
+            # GUILHERMII
+            # Verificar os parametros da função antes de retornar o erro:
+            # print_error('Identificador invalido, ele ainda não foi declarado!', linha['Linha'])
             return False
 
     verificar_tipo_inteiro_atribuicao(linha)
-    #Verifica se o formato do boolean é valido, passando o lexema que tem o tipo boolean que salvamos anteriormente
+    # Verifica se o formato do boolean é valido, passando o lexema que tem o tipo boolean que salvamos anteriormente
     verificar_tipo_boolean_atribuicao(linha, linha_boolean)
     return True
+
 
 def verificar_tipo_inteiro_atribuicao(linha):
     if linha['Tipo'] == 'int':
         if 'true' in linha['Valor'] or 'false' in linha['Valor']:
             print_error('Não é possivel atribuir um boolean à um inteiro', linha['Linha'])
 
+
 def verificar_tipo_boolean_atribuicao(linha, linha_boolean):
     if linha['Tipo'] == 'boolean' and linha['Valor'] not in ['true', 'false']:
         if linha_boolean is not None:
             if linha_boolean['Lexema'] and linha_boolean['Lexema'] != linha['Valor']:
-                    print_error('Não é possivel realizar operações com um boolean em uma atribuição', linha['Linha'])
+                print_error('Não é possivel realizar operações com um boolean em uma atribuição', linha['Linha'])
         else:
             print_error('O identificador é do tipo boolean, só é possivel atribuir um boolean a ele', linha['Linha'])
+
 
 def get_lexema_identificadores_atribuicao(linha):
     line = linha['Linha']
@@ -129,6 +142,7 @@ def get_lexema_identificadores_atribuicao(linha):
         if (tokens.pop() == 'identificador'):
             lista_lexemas.append(lexemas[len(tokens)])
     return lista_lexemas
+
 
 def verificar_tipo_identificador_repetido(linha, index, tabela):
     if (linha['Token'] == 'identificador'):
@@ -142,6 +156,7 @@ def verificar_tipo_identificador_repetido(linha, index, tabela):
                             print_error('Atribuição de tipos diferentes no mesmo identificador', linha['Linha'])
     return False
 
+
 def verificar_escopo_identificador_repetido(linha, linha_tabela):
     if (linha_tabela['Escopo'] == 'global'):
         return True;
@@ -152,12 +167,14 @@ def verificar_escopo_identificador_repetido(linha, linha_tabela):
             return True
     return False
 
+
 def print_error(mensagem, linha=None):
     if linha != None:
         print("Erro de Semantica:", mensagem, 'Linha:', linha)
     else:
         print("Erro de Semantica:", mensagem)
     exit()
+
 
 def create_line_lexemas():
     lista_lexemas = {}
@@ -175,6 +192,7 @@ def create_line_lexemas():
 
     lista_lexemas[numLinhas[last_position, 0]] = [lexemas_line[last_position]]
     return lista_lexemas
+
 
 def get_line_lexemas(linha):
     try:
@@ -200,8 +218,6 @@ def create_line_tokens():
     lista_tokens[numLinhas[last_position, 0]] = [tokens_line[last_position]]
     return lista_tokens
 
+
 def get_line_tokens(linha):
-    try:
-        return tokens_lines[linha].copy()
-    except Exception as e:
-        print('linha vazia ou não encontrada')
+    return tokens_lines[linha].copy()
