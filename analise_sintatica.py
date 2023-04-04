@@ -140,9 +140,13 @@ def verificar_atribuicao(token, linha, index, lista_escopo):
                 if lista_tokens_linha.pop() == 'operador_atribuicao':
                     if lista_tokens_linha.pop() == 'identificador':
                         if lista_tokens_linha.pop() == 'tipo':
+                            token_index = index
+                            while (lexemas[token_index] != ';'):
+                                token_index += 1
+                                valor.append(lexemas[token_index][0])
                             tabela_simbolos.loc[len(tabela_simbolos)] = ['identificador', lexemas[index - 1][0],
                                                                          lexemas[index - 2][0],
-                                                                         linha, ' '.join(valor[:-1]), "-",
+                                                                         linha, ''.join(valor[:-1]), "-",
                                                                          "-", "-",
                                                                          determinar_linha_escopo(lista_escopo, linha)]
                             return True
