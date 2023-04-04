@@ -1,9 +1,12 @@
-boolean vap = true;
+boolean var2 = true;
+boolean var1 = false;
+
+boolean vap = var2;
 
 int myVar4 = 5;
 
 if (myVar2 > 10){
-    int myVar4 = myVar2 + 5;
+    int myVar4 = myVar4 + 5;
 }else{
     int pokemon = 5;
 }
