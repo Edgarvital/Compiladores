@@ -1,7 +1,7 @@
 import pandas as pd
 
 def analise(tabela):
-    global tokens, lexemas, numLinhas, tokens_lines, tabela_simbolos
+    global tokens, lexemas, numLinhas, tokens_lines, lexemas_lines, tabela_simbolos
     tokens = (tabela[tabela.columns[0:1:]]).values
     lexemas = (tabela[tabela.columns[1:2:]]).values
     numLinhas = (tabela[tabela.columns[2:3:]]).values
@@ -11,6 +11,7 @@ def analise(tabela):
                  'QntParametros', 'Variaveis', 'TiposVar', 'Escopo'])
 
     tokens_lines = create_line_tokens()
+    lexemas_lines = create_line_lexemas()
     try:
         lista_escopo = verificar_escopo(tokens_lines)
 
@@ -30,9 +31,17 @@ def determinar_linha_escopo(lista_escopo, linha):
     for escopo in lista_escopo:
         if linha >= escopo[2] and linha<= escopo[3]:
             if aux != "":
-                aux = escopo[1] + "," + aux
+                if escopo[1] == "funcao" or escopo[1] == "procedimento":
+                    lexemas_escopo = get_line_lexemas(escopo[2])
+                    aux = lexemas_escopo[1] + "," + aux
+                else:
+                    aux = escopo[1] + "," + aux
             else:
-                aux = escopo[1] + '[' + str(escopo[2]) + ',' + str(escopo[3]) + ']'
+                if escopo[1] == "funcao" or escopo[1] == "procedimento":
+                    lexemas_escopo = get_line_lexemas(escopo[2])
+                    aux = lexemas_escopo[1] + '[' + str(escopo[2]) + ',' + str(escopo[3]) + ']'
+                else:
+                    aux = escopo[1] + '[' + str(escopo[2]) + ',' + str(escopo[3]) + ']'
 
     if aux != "":
         return aux
@@ -233,6 +242,28 @@ def create_line_tokens():
     lista_tokens[numLinhas[last_position, 0]] = [tokens_line[last_position]]
     return lista_tokens
 
+def create_line_lexemas():
+    lista_lexemas = {}
+    lexemas_line = []
+    linha_aux = [1]
+    last_position = -1
+    for index, linha in enumerate(numLinhas):
+        if (linha_aux == linha):
+            lexemas_line.append(lexemas[index, 0])
+        else:
+            lista_lexemas[linha_aux[0]] = lexemas_line
+            linha_aux = linha
+            lexemas_line = []
+            lexemas_line.append(lexemas[index, 0])
+
+    lista_lexemas[numLinhas[last_position, 0]] = [lexemas_line[last_position]]
+    return lista_lexemas
+
+def get_line_lexemas(linha):
+    try:
+        return lexemas_lines[linha].copy()
+    except Exception as e:
+        print('linha vazia ou não encontrada')
 
 def verifcar_abertura_chave(linha, posicao, tokens_validos, token, numero_linha):
     if token == 'abre_chave':
