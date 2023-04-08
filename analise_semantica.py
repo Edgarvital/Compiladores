@@ -92,12 +92,16 @@ def verificar_variaveis_atribuicao(linha, index, tabela, chamada_funcao):
 
 def verificar_tokens_lexemas_atribuicao(linha, index, tabela, chamada_funcao):
     lexemas = get_lexema_identificadores_atribuicao(linha)
+    possiveis_parametros = get_lexema_identificadores_atribuicao(linha)
     linha_boolean = None
     count = 0
     if (lexemas):
         for i in range(index):
             linha_tabela = tabela.iloc[i]
             if linha_tabela['Lexema'] in lexemas:
+                # Verifica se ele está na nossa lista de possiveis argumentos, se estiver remove dela
+                if linha_tabela['Lexema'] in possiveis_parametros:
+                    possiveis_parametros.remove(linha_tabela['Lexema'])
                 if linha['Tipo'] == linha_tabela['Tipo']:
                     count += 1
                 else:
@@ -106,17 +110,51 @@ def verificar_tokens_lexemas_atribuicao(linha, index, tabela, chamada_funcao):
                 if linha_tabela['Tipo'] == 'boolean':
                     # Salva o boolean que está dentro do valor da linha atual da tabela que estamos verificando
                     linha_boolean = linha_tabela
-        if count != len(lexemas):
-            # GUILHERMII
-            # Verificar os parametros da função antes de retornar o erro:
-            # print_error('Identificador invalido, ele ainda não foi declarado!', linha['Linha'])
-            return False
+        if len(possiveis_parametros) != 0:
+            if comparar_parametros_funcoes_procedimentos(tabela, linha['Escopo'], possiveis_parametros, linha['Tipo'], linha['Linha']):
+                print_error('Identificador invalido, ele ainda não foi declarado!', linha['Linha'])
+                return False
 
     verificar_tipo_inteiro_atribuicao(linha)
     # Verifica se o formato do boolean é valido, passando o lexema que tem o tipo boolean que salvamos anteriormente
     verificar_tipo_boolean_atribuicao(linha, linha_boolean)
     return True
 
+def comparar_parametros_funcoes_procedimentos(tabela, lista_escopo, possiveis_parametros, tipo_variavel, posicao):
+    # Tratando a lista de escopo
+    lista_escopo = tratar_lista_escopo(lista_escopo)
+    # Recuperando as linhas dos escopos referidos
+    linhas_escopo = tabela[tabela['Lexema'].isin(lista_escopo)]
+    # Percorro as linhas das assinaturas de escopos encontradas
+
+    for i,linha in linhas_escopo.iterrows():
+        # Percorros os identificadores encontrados nos parametros
+        for index, parametro in enumerate(linha['Variaveis']):
+            if parametro in possiveis_parametros:
+                possiveis_parametros.remove(parametro)
+                # Encontrado o identificador, ocorre uma verificação do tipo
+                if linha['TiposVar'][index] != tipo_variavel:
+                    print_error('Tipo de variavel incompativel na atribuição', posicao)
+
+    # Caso ainda exista algum valor, nos diz que tais variaveis não estão presentes
+    # nos parametros de procedimentos e funcoes
+    if len(possiveis_parametros) != 0:
+        return True
+
+    return False
+
+def tratar_lista_escopo(lista_escopo):
+    # Encontra o índice de "["
+    indice_abre = lista_escopo.find("[")
+
+    if indice_abre != -1:
+        # Se encontrou "[", divide a string antes dele
+        nova_lista = lista_escopo[:indice_abre].split(",")
+    else:
+        # Se não encontrou "[", divide a string inteira
+        nova_lista = lista_escopo.split(",")
+
+    return nova_lista
 
 def verificar_tipo_inteiro_atribuicao(linha):
     if linha['Tipo'] == 'int':
