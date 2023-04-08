@@ -18,24 +18,25 @@ def gerar(tabela_lexica, tabela_sintatica):
 
     loop_geracao(tabela_lexica)
 
-
 def loop_geracao(tabela):
-    adicionar_identificador_arquivo(tabela)
-
-
-def adicionar_identificador_arquivo(tabela):
     aux = 0
     for index, linha in tabela.iterrows():
-        lista_lexemas = get_line_lexemas(linha['linha'])
-        lista_tokens = get_line_tokens(linha['linha'])
-        if (linha['Token'] == 'identificador' and aux == 1 and lista_tokens[0] == 'tipo'):
-            if(lista_lexemas[3] not in lexemas_funcoes):
-                linha_lexemas = ' '.join(lista_lexemas)
-                arquivo.write(linha_lexemas + '\n')
+        adicionar_identificador_arquivo(linha, aux)
         aux += 1
-        if (linha['Token'] == 'ponto_virgula' or linha['Token'] == 'abre_chave' or linha['Token'] == 'fecha_chave'):
+        if (verificar_reset_aux(linha)):
             aux = 0
+def adicionar_identificador_arquivo(linha, aux):
+    lista_lexemas = get_line_lexemas(linha['linha'])
+    lista_tokens = get_line_tokens(linha['linha'])
 
+    if (linha['Token'] == 'identificador' and aux == 1 and lista_tokens[0] == 'tipo'):
+        if (lista_lexemas[3] not in lexemas_funcoes):
+            linha_lexemas = ' '.join(lista_lexemas)
+            arquivo.write(linha_lexemas + '\n')
+
+def verificar_reset_aux(linha):
+    if (linha['Token'] == 'ponto_virgula' or linha['Token'] == 'abre_chave' or linha['Token'] == 'fecha_chave'):
+        return True
 
 def create_line_lexemas():
     lista_lexemas = {}
