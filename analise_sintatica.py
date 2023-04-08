@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 def analise(tabela):
     global tokens, lexemas, numLinhas, tokens_lines, lexemas_lines, tabela_simbolos
     tokens = (tabela[tabela.columns[0:1:]]).values
@@ -25,11 +26,12 @@ def analise(tabela):
 
     return tabela_simbolos
 
+
 def determinar_linha_escopo(lista_escopo, linha):
     aux = ""
     # Verificar se está em uma condficional
     for escopo in lista_escopo:
-        if linha >= escopo[2] and linha<= escopo[3]:
+        if linha >= escopo[2] and linha <= escopo[3]:
             if aux != "":
                 if escopo[1] == "funcao" or escopo[1] == "procedimento":
                     lexemas_escopo = get_line_lexemas(escopo[2])
@@ -47,8 +49,10 @@ def determinar_linha_escopo(lista_escopo, linha):
         return aux
     return "global"
 
+
 def loop_verificacao(lista_escopo):
     for index, token in enumerate(tokens):
+        verificar_identificador(token, numLinhas[index, 0])
         assinatura_if(token, numLinhas[index, 0], lexemas[index])
         assinatura_else(token, numLinhas[index, 0], lexemas[index])
         verificar_atribuicao(token, numLinhas[index, 0], index, lista_escopo)
@@ -127,6 +131,18 @@ def verificar_atribuicao_funcao(lista_tokens, linha):
     return False
 
 
+def verificar_identificador(token, linha):
+    if (token == 'identificador'):
+        lista_tokens_linha = get_line_tokens(linha)
+        if (lista_tokens_linha.pop() == 'ponto_virgula'):
+            if (lista_tokens_linha.pop() == 'identificador'):
+                try:
+                    if (lista_tokens_linha.pop() == 'tipo'):
+                        print_error('Identificador vazio não permitido!', linha)
+                except:
+                    print_error('Identificador vazio não permitido!', linha)
+
+
 def verificar_atribuicao(token, linha, index, lista_escopo):
     valor = []
     if (token == 'operador_atribuicao'):
@@ -136,12 +152,14 @@ def verificar_atribuicao(token, linha, index, lista_escopo):
                 if lista_tokens_linha.pop() == 'identificador':
                     if lista_tokens_linha.pop() == 'tipo':
                         token_index = index
-                        while(lexemas[token_index] != ';'):
+                        while (lexemas[token_index] != ';'):
                             token_index += 1
                             valor.append(lexemas[token_index][0])
-                        tabela_simbolos.loc[len(tabela_simbolos)] = ['identificador', lexemas[index-1][0], lexemas[index-2][0],
+                        tabela_simbolos.loc[len(tabela_simbolos)] = ['identificador', lexemas[index - 1][0],
+                                                                     lexemas[index - 2][0],
                                                                      linha, ' '.join(valor[:-1]), "-",
-                                                                     "-", "-", determinar_linha_escopo(lista_escopo,linha)]
+                                                                     "-", "-",
+                                                                     determinar_linha_escopo(lista_escopo, linha)]
                         return True
         else:
             lista_tokens_linha = get_line_tokens(linha)
@@ -202,16 +220,18 @@ def assinatura_if(token, linha, lexema):
                             return True
         print_error('Erro na assinatura do IF', linha)
 
+
 def assinatura_print(token, linha):
     if (token == 'impressao'):
         lista_tokens_linha = get_line_tokens(linha)
         if lista_tokens_linha.pop() == 'ponto_virgula':
             if lista_tokens_linha.pop() == 'fecha_parentese':
-                if lista_tokens_linha.pop() in ['numerico','identificador', 'booleano']:
+                if lista_tokens_linha.pop() in ['numerico', 'identificador', 'booleano']:
                     if lista_tokens_linha.pop() == 'abre_parentese':
                         if len(lista_tokens_linha) == 1 and lista_tokens_linha[0] == 'impressao':
                             return True
         print_error('Erro na assinatura do PRINT', linha)
+
 
 def assinatura_else(token, linha, lexema):
     if token == 'condicional' and lexema == 'else':
@@ -242,6 +262,7 @@ def create_line_tokens():
     lista_tokens[numLinhas[last_position, 0]] = [tokens_line[last_position]]
     return lista_tokens
 
+
 def create_line_lexemas():
     lista_lexemas = {}
     lexemas_line = []
@@ -259,15 +280,17 @@ def create_line_lexemas():
     lista_lexemas[numLinhas[last_position, 0]] = [lexemas_line[last_position]]
     return lista_lexemas
 
+
 def get_line_lexemas(linha):
     try:
         return lexemas_lines[linha].copy()
     except Exception as e:
         print('linha vazia ou não encontrada')
 
+
 def verifcar_abertura_chave(linha, posicao, tokens_validos, token, numero_linha):
     if token == 'abre_chave':
-        if linha[0] not in tokens_validos and len(linha) > 1 and(
+        if linha[0] not in tokens_validos and len(linha) > 1 and (
                 linha[0] != 'fecha_chave' and linha[1] != 'condicional' and linha[2] != 'abre_chave'):
             print_error('Abertura de chave invalida.', numero_linha)
         if posicao != (len(linha) - 1):
@@ -290,7 +313,7 @@ def verificar_escopo(tokens_lines):
     for numero_linha, linha in tokens_lines.items():
         for indice, token in enumerate(linha):
             # Verificar abertura de chave
-            if verifcar_abertura_chave(linha, indice, tokens_validos_inicio, token,numero_linha):
+            if verifcar_abertura_chave(linha, indice, tokens_validos_inicio, token, numero_linha):
                 if linha[0] == "fecha_chave":
                     chave_Count.append([linha[-1], linha[1], numero_linha])
                 else:
@@ -388,10 +411,9 @@ def assinatura_procedimento_funcao(token, numero_linha, index):
         if (linha[2] != 'abre_parentese') and (linha[-2] != 'fecha_parentese'):
             print_error('Incorreta a assinatura da funcao/procedimento.', numero_linha)
 
-
         # Utilização de função auxiliar os argumentos presentes na função/procedimento
         verificao_argumento_procedimento_funcao(linha[3:-2], numero_linha, index)
-        lista_lexemas = gerar_lista_lexemas_argumentos(linha[3:-2],index+2)
+        lista_lexemas = gerar_lista_lexemas_argumentos(linha[3:-2], index + 2)
         tipos_argumentos = [item[0] for item in lista_lexemas]
         identificadores_argumentos = [item[1] for item in lista_lexemas]
 
@@ -424,13 +446,13 @@ def verificao_argumento_procedimento_funcao(argumentos, linha, index):
             print_error('Incorreta a passagem dos argumentos.', linha)
 
 
-def gerar_lista_lexemas_argumentos(argumentos,index):
+def gerar_lista_lexemas_argumentos(argumentos, index):
     lista_lexemas = []
     sublista_lexemas = []
     cont = index
 
     for lexema in argumentos:
-        cont +=1
+        cont += 1
         if lexema == 'virgula':
             lista_lexemas.append(sublista_lexemas)
             sublista_lexemas = []

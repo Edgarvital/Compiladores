@@ -1,0 +1,14 @@
+boolean var2 = true ;
+boolean var1 = false ;
+boolean vap = var2 ;
+int myVar4 = 5 ;
+int myVar4 = myVar4 + 5 ;
+int pokemon = 5 ;
+int localVariable1 = arg1 + arg2 ;
+int val1 = 4 ;
+int localVar1 = param1 + 5 ;
+int localVar2 = 7 ;
+int localVar3 = param1 + param3 + param2 - 1 ;
+int myVar5 = 3 ;
+int myVar6 = 6 ;
+boolean paz = true ;
