@@ -1,5 +1,5 @@
-def gerar(tabela_lexica, tabela_sintatica):
-    global tokens, lexemas, numLinhas, tokens_lines, lexemas_lines, tabela_simbolos, arquivo, lexemas_funcoes;
+def gerar(tabela_lexica, tabela_sintatica, lista_escopo):
+    global tokens, lexemas, numLinhas, tokens_lines, lexemas_lines, tabela_simbolos, arquivo, lexemas_funcoes, open_l, close_l;
     # Limpar arquivo
     arquivo = open("CodigoIntermediario.txt", "w")
     arquivo.write("")
@@ -10,18 +10,23 @@ def gerar(tabela_lexica, tabela_sintatica):
     lexemas = (tabela_lexica[tabela_lexica.columns[1:2:]]).values
     numLinhas = (tabela_lexica[tabela_lexica.columns[2:3:]]).values
 
+    open_l = 1
+    close_l = 0
+
     indices_funcoes = tabela_sintatica.loc[tabela_sintatica['Token'] == "funcao"].index.to_numpy()
     lexemas_funcoes = tabela_sintatica.loc[indices_funcoes, 'Lexema'].values
 
     tokens_lines = create_line_tokens()
     lexemas_lines = create_line_lexemas()
 
-    loop_geracao(tabela_lexica)
+    loop_geracao(tabela_lexica, lista_escopo)
 
 
-def loop_geracao(tabela):
-    adicionar_identificador_arquivo(tabela)
-
+def loop_geracao(tabela, lista_escopo):
+    #adicionar_identificador_arquivo(tabela)
+    for index, linha in tabela.iterrows():
+        determinar_abertura_escopo(tabela, linha)
+        determinar_fechamento_escopo(tabela, linha, lista_escopo)
 
 def adicionar_identificador_arquivo(tabela):
     aux = 0
@@ -35,6 +40,65 @@ def adicionar_identificador_arquivo(tabela):
         aux += 1
         if (linha['Token'] == 'ponto_virgula' or linha['Token'] == 'abre_chave' or linha['Token'] == 'fecha_chave'):
             aux = 0
+
+def determinar_abertura_escopo(tabela, linha):
+    global open_l, close_l
+    lista_lexemas = get_line_lexemas(linha['linha'])
+    lista_tokens = get_line_tokens(linha['linha'])
+
+    if linha['Token'] == 'procedimento':
+        arquivo.write(lista_lexemas[1] + ':\n')
+        arquivo.write('InicioProcedimento;\n')
+
+    elif linha['Token'] == 'funcao':
+        arquivo.write(lista_lexemas[1] + ':\n')
+        arquivo.write('InicioFuncao;\n')
+
+    elif linha['Token'] == 'condicional' and linha['Lexema'] == 'if':
+        arquivo.write('_L' + str(open_l) + ": ")
+        arquivo.write(lista_lexemas[0] + ' ' + ' '.join(lista_lexemas[2:-2]))
+        open_l += 2
+        close_l = open_l - 1
+        arquivo.write(' goto _L' + str(close_l) + ':\n')
+
+    elif linha['Token'] == 'laco':
+        arquivo.write('_L' + str(open_l) + ": ")
+        arquivo.write('if ' + ' '.join(lista_lexemas[2:-2]))
+        open_l += 2
+        close_l = open_l - 1
+        arquivo.write(' goto _L' + str(close_l) + ':\n')
+
+
+
+def determinar_fechamento_escopo(tabela, linha, lista_escopo):
+    global open_l, close_l
+    lista_lexemas = get_line_lexemas(linha['linha'])
+    lista_tokens = get_line_tokens(linha['linha'])
+
+    if linha['Token'] == 'fecha_chave' and len(lista_tokens) == 1:
+        tipo_escopo = determinar_tipo_fechamento_escopo(linha['linha'], lista_escopo)
+        if tipo_escopo == 'funcao':
+            arquivo.write('FimFuncao;\n')
+
+        elif tipo_escopo == 'procedimento':
+            arquivo.write('FimProcedimento;\n')
+
+        elif tipo_escopo == 'condicional':
+            arquivo.write('_L' + str(close_l) + ':\n')
+            close_l -= 2
+
+        elif tipo_escopo == 'laco':
+            arquivo.write('goto _L' + str(close_l-1) + '\n')
+            arquivo.write('_L' + str(close_l) + ':\n')
+            close_l -= 2
+
+def determinar_tipo_fechamento_escopo(linha, lista_escopo):
+
+    for escopo in lista_escopo:
+        if escopo[3] == linha:
+            return escopo[1]
+
+    return "nao_encontrado"
 
 
 def create_line_lexemas():

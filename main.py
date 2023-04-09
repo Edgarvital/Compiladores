@@ -15,8 +15,8 @@ tabela_sintatica = analise_sintatica.analise(tabela_lexica)
 #print(tabela_sintatica.to_string())
 
 
-semantico = analise_semantica.analise(tabela_lexica, tabela_sintatica)
+semantico = analise_semantica.analise(tabela_lexica, tabela_sintatica[0])
 
-gerador_codigo_intermediario.gerar(tabela_lexica, tabela_sintatica);
+gerador_codigo_intermediario.gerar(tabela_lexica, tabela_sintatica[0], tabela_sintatica[1])
 
 

@@ -13,6 +13,7 @@ def analise(tabela):
 
     tokens_lines = create_line_tokens()
     lexemas_lines = create_line_lexemas()
+    lista_escopo = []
     try:
         lista_escopo = verificar_escopo(tokens_lines)
 
@@ -24,7 +25,7 @@ def analise(tabela):
     except Exception as e:
         print_error('Erro de sintaxe')
 
-    return tabela_simbolos
+    return [tabela_simbolos, lista_escopo]
 
 
 def determinar_linha_escopo(lista_escopo, linha):
