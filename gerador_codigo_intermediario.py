@@ -26,8 +26,8 @@ def loop_geracao(tabela, lista_escopo):
     aux = 0
     for index, linha in tabela.iterrows():
         adicionar_identificador_arquivo(linha, aux)
-        determinar_abertura_escopo(tabela, linha)
-        determinar_fechamento_escopo(tabela, linha, lista_escopo)
+        determinar_abertura_escopo(linha)
+        determinar_fechamento_escopo(linha, lista_escopo)
         aux += 1
         if (verificar_reset_aux(linha)):
             aux = 0
@@ -44,47 +44,66 @@ def verificar_reset_aux(linha):
     if (linha['Token'] == 'ponto_virgula' or linha['Token'] == 'abre_chave' or linha['Token'] == 'fecha_chave'):
         return True
 
-
-def determinar_abertura_escopo(tabela, linha):
+def determinar_abertura_escopo(linha):
     global open_l, close_l
     lista_lexemas = get_line_lexemas(linha['linha'])
-    lista_tokens = get_line_tokens(linha['linha'])
 
     if linha['Token'] == 'procedimento':
         arquivo.write(lista_lexemas[1] + ':\n')
-        arquivo.write('InicioProcedimento;\n')
+        arquivo.write('BeginProc;\n')
 
     elif linha['Token'] == 'funcao':
         arquivo.write(lista_lexemas[1] + ':\n')
-        arquivo.write('InicioFuncao;\n')
+        arquivo.write('BeginFunc;\n')
 
     elif linha['Token'] == 'condicional' and linha['Lexema'] == 'if':
         arquivo.write('_L' + str(open_l) + ": ")
-        arquivo.write(lista_lexemas[0] + ' ' + ' '.join(lista_lexemas[2:-2]))
+        condicional = ajustar_condicional(lista_lexemas[2:-2])
+        arquivo.write(lista_lexemas[0] + ' ' + ' '.join(condicional))
         open_l += 2
         close_l = open_l - 1
         arquivo.write(' goto _L' + str(close_l) + ':\n')
 
     elif linha['Token'] == 'laco':
         arquivo.write('_L' + str(open_l) + ": ")
-        arquivo.write('if ' + ' '.join(lista_lexemas[2:-2]))
+        condicional = ajustar_condicional(lista_lexemas[2:-2])
+        arquivo.write('if ' + ' '.join(condicional))
         open_l += 2
         close_l = open_l - 1
         arquivo.write(' goto _L' + str(close_l) + ':\n')
 
+def ajustar_condicional(lista_condicional):
+    for index, valor in enumerate(lista_condicional):
+        if valor == "!=":
+            lista_condicional[index] = '=='
+        elif valor == "==":
+            lista_condicional[index] = '!='
+        elif valor == "<=":
+            lista_condicional[index] = '>'
+        elif valor == ">=":
+            lista_condicional[index] = '<'
+        elif valor == "<":
+            lista_condicional[index] = '>='
+        elif valor == ">":
+            lista_condicional[index] = '<='
+        elif valor == 'true':
+            lista_condicional[index] = 'false'
+        elif valor == 'false':
+            lista_condicional[index] = 'true'
 
-def determinar_fechamento_escopo(tabela, linha, lista_escopo):
+    return lista_condicional
+
+def determinar_fechamento_escopo(linha, lista_escopo):
     global open_l, close_l
-    lista_lexemas = get_line_lexemas(linha['linha'])
     lista_tokens = get_line_tokens(linha['linha'])
 
     if linha['Token'] == 'fecha_chave' and len(lista_tokens) == 1:
         tipo_escopo = determinar_tipo_fechamento_escopo(linha['linha'], lista_escopo)
         if tipo_escopo == 'funcao':
-            arquivo.write('FimFuncao;\n')
+            arquivo.write('EndFunc;\n')
 
         elif tipo_escopo == 'procedimento':
-            arquivo.write('FimProcedimento;\n')
+            arquivo.write('EndProc;\n')
 
         elif tipo_escopo == 'condicional':
             arquivo.write('_L' + str(close_l) + ':\n')
@@ -120,13 +139,11 @@ def create_line_lexemas():
     lista_lexemas[numLinhas[last_position, 0]] = [lexemas_line[last_position]]
     return lista_lexemas
 
-
 def get_line_lexemas(linha):
     try:
         return lexemas_lines[linha].copy()
     except Exception as e:
         print('linha vazia ou não encontrada')
-
 
 def create_line_tokens():
     lista_tokens = {}
@@ -144,7 +161,6 @@ def create_line_tokens():
 
     lista_tokens[numLinhas[last_position, 0]] = [tokens_line[last_position]]
     return lista_tokens
-
 
 def get_line_tokens(linha):
     return tokens_lines[linha].copy()

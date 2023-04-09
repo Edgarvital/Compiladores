@@ -34,7 +34,7 @@ int myVar6 = 6;
 boolean paz = true;
 while(myVar5 < 4){
     if (true){
-        while(myVar5 < 4){
+        while(myVar5 != 4){
             int myVar7 = teste1(myVar5, myVar6);
         }
     }
