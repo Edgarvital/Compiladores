@@ -26,6 +26,7 @@ def loop_geracao(tabela, lista_escopo):
     aux = 0
     for index, linha in tabela.iterrows():
         adicionar_identificador_arquivo(linha, aux)
+        adicionar_print(linha)
         determinar_abertura_escopo(linha)
         determinar_fechamento_escopo(linha, lista_escopo)
         aux += 1
@@ -39,6 +40,18 @@ def adicionar_identificador_arquivo(linha, aux):
         if (lista_lexemas[3] not in lexemas_funcoes):
             linha_lexemas = ' '.join(lista_lexemas)
             arquivo.write(linha_lexemas + '\n')
+        else:
+            lista_lexemas[2] = '= call'
+            linha_lexemas = ' '.join(lista_lexemas)
+            arquivo.write(linha_lexemas + '\n')
+
+def adicionar_print(linha):
+    lista_lexemas = get_line_lexemas(linha['linha'])
+    if(linha['Token'] == 'impressao'):
+        lista_lexemas[0] = 'call print'
+        linha_lexemas = ' '.join(lista_lexemas)
+        arquivo.write(linha_lexemas + '\n')
+
 
 def verificar_reset_aux(linha):
     if (linha['Token'] == 'ponto_virgula' or linha['Token'] == 'abre_chave' or linha['Token'] == 'fecha_chave'):

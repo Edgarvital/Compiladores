@@ -21,12 +21,15 @@ _L5:
 int localVar2 = 7 ;
 int localVar3 = param1 + param3 + param2 - 1 ;
 EndProc;
+int myResult = call teste1 ( 3 , 4 ) ;
+call print ( myResult ) ;
 int myVar5 = 3 ;
 int myVar6 = 6 ;
 boolean paz = true ;
 _L6: if myVar5 >= 4 goto _L7:
 _L8: if false goto _L9:
 _L10: if myVar5 == 4 goto _L11:
+int myVar7 = call teste1 ( myVar5 , myVar6 ) ;
 goto _L10
 _L11:
 _L9:
