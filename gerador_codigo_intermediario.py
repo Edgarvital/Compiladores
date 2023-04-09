@@ -113,7 +113,12 @@ def determinar_fechamento_escopo(linha, lista_escopo):
             arquivo.write('goto _L' + str(close_l-1) + '\n')
             arquivo.write('_L' + str(close_l) + ':\n')
             close_l -= 2
-
+    elif linha['Token'] == 'fecha_chave' and len(lista_tokens) != 1:
+        print(close_l)
+        arquivo.write('goto _L' + str(close_l +1) + '\n')
+        arquivo.write('_L' + str(close_l) + ':\n')
+        close_l += 1
+        open_l += 1
 def determinar_tipo_fechamento_escopo(linha, lista_escopo):
 
     for escopo in lista_escopo:

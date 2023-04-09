@@ -4,8 +4,10 @@ boolean vap = var2 ;
 int myVar4 = 5 ;
 _L1: if myVar2 <= 10 goto _L2:
 int myVar4 = myVar4 + 5 ;
-int pokemon = 5 ;
+goto _L3
 _L2:
+int pokemon = 5 ;
+_L3:
 teste1:
 BeginFunc;
 int localVariable1 = arg1 + arg2 ;
@@ -13,20 +15,20 @@ EndFunc;
 tupi:
 BeginProc;
 int val1 = 4 ;
-_L3: if false goto _L4:
+_L4: if false goto _L5:
 int localVar1 = param1 + 5 ;
-_L4:
+_L5:
 int localVar2 = 7 ;
 int localVar3 = param1 + param3 + param2 - 1 ;
 EndProc;
 int myVar5 = 3 ;
 int myVar6 = 6 ;
 boolean paz = true ;
-_L5: if myVar5 >= 4 goto _L6:
-_L7: if false goto _L8:
-_L9: if myVar5 == 4 goto _L10:
-goto _L9
-_L10:
-_L8:
-goto _L5
-_L6:
+_L6: if myVar5 >= 4 goto _L7:
+_L8: if false goto _L9:
+_L10: if myVar5 == 4 goto _L11:
+goto _L10
+_L11:
+_L9:
+goto _L6
+_L7:
